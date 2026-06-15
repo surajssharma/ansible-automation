@@ -1,0 +1,75 @@
+---
+- name: multi play yaml
+  hosts: all
+  remote_user: root
+  become: true
+
+  vars:
+    content: "baby I love you\n"
+    copy_src: /etc/hosts
+    copy_dest: /tmp/hosts1
+    cont_dest: /tmp/love1.txt
+    user_name: hello
+    dest_dir: /tmp/aap1
+    file_dest: /tmp/aap1/test1.txt
+    package: httpd
+    service: firewalld
+    service1: http
+
+  tasks:
+
+    - name: copy a file
+      copy:
+        src: "{{ copy_src }}"
+        dest: "{{ copy_dest }}"
+
+    - name: create content in file
+      copy:
+        content: "{{ content }}"
+        dest: "{{ cont_dest }}"
+
+    - name: create a user
+      ansible.builtin.user:
+        name: "{{ user_name }}"
+        shell: /bin/bash
+        state: present
+
+    - name: create directory in destination
+      ansible.builtin.file:
+        path: "{{ dest_dir }}"
+        state: directory
+        owner: "{{ user_name }}"
+        group: "{{ user_name }}"
+        mode: '0777'
+
+    - name: create a file
+      ansible.builtin.file:
+        path: "{{ file_dest }}"
+        state: touch
+        mode: '0644'
+        modification_time: preserve
+        access_time: preserve
+
+    - name: install package
+      ansible.builtin.dnf:
+        name: "{{ package }}"
+        state: present
+
+    - name: start the service
+      ansible.builtin.service:
+        name: "{{ package }}"
+        state: started
+        enabled: true
+
+    - name: start firewall service if stopped
+      ansible.builtin.service:
+        name: "{{ service }}"
+        state: started
+        enabled: true
+
+    - name: add port in firewall
+      ansible.builtin.firewalld:
+        service: "{{ service1 }}"
+        state: enabled
+        permanent: true
+        immediate: true
