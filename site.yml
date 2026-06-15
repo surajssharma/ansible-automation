@@ -1,6 +1,7 @@
 ---
 - name: install httpd
   hosts: web
+  remote_user: root
   become: true
 
   tasks:
